@@ -4,6 +4,8 @@ import { Routes, Route } from 'react-router-dom';
 import { SignedIn, SignedOut, SignIn, SignUp, RedirectToSignIn } from '@clerk/clerk-react';
 import ProtectedPage from './pages/ProtectedPage/ProtectedPage';
 import Landing from "./pages/Landing/Landing.js";
+import Dashboard from "./pages/Dashboard/Dashboard.js";
+import "./App.css";
 
 function App() {
   return (
@@ -13,14 +15,41 @@ function App() {
 
       {/* Sign-In Route */}
       <Route
-        path="/sign-in"
-        element={<SignIn fallbackRedirectUrl={'/protected'} routing="path" path="/sign-in" />}
+        path="/sign-in/*"
+        element={
+          <div className="auth-container">
+            <SignIn fallbackRedirectUrl={'/protected'} routing="path" path="/sign-in" />
+          </div>
+        }
       />
 
       {/* Sign-Up Route */}
       <Route
         path="/sign-up"
         element={<SignUp fallbackRedirectUrl={'/protected'} routing="path" path="/sign-up" />}
+      />
+
+      {/* Sign-Out Route */}
+      <Route
+        path="/sign-out"
+        element={<RedirectToSignIn routing="path" path="/sign-in" />}
+      />
+
+      {/* Dashboard Route */}
+      <Route
+        path="/dashboard"
+        element={
+          <>
+            <SignedIn>
+              <ProtectedPage >
+                <Dashboard />
+              </ProtectedPage>
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </>
+        }
       />
 
       {/* Protected Route */}

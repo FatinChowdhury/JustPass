@@ -16,7 +16,8 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <ClerkProvider publishableKey={clerkPubKey}>
+      <ClerkProvider publishableKey={clerkPubKey}
+      navigate={(to) => window.location.assign(to)}>
         <App />
       </ClerkProvider>
     </BrowserRouter>
