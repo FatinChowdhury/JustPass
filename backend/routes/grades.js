@@ -62,4 +62,4 @@ router.post("/", async (req, res) => {
 //     }
 // });
 
-export default GradesRouter;
+export default router;

@@ -1,3 +1,4 @@
+import React from "react";
 import { Protect, UserButton } from "@clerk/clerk-react";
 import "./protectedpage.css"; // Make sure to import your CSS file
 

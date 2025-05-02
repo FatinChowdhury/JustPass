@@ -1,13 +1,40 @@
 // App.js
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Routes, Route, Router } from 'react-router-dom';
 import { SignedIn, SignedOut, SignIn, SignUp, RedirectToSignIn } from '@clerk/clerk-react';
 import ProtectedPage from './pages/ProtectedPage/ProtectedPage';
 import Landing from "./pages/Landing/Landing.js";
-import Dashboard from "./pages/Dashboard/Dashboard.js";
+// import Dashboard from "./pages/Dashboard/Dashboard.js";
 import "./App.css";
 
 function App() {
+
+  // useEffect(() => {
+  //   // Check if the user is authenticated
+  //   const isAuthenticated = localStorage.getItem('isAuthenticated');
+  //   if (isAuthenticated) {
+  //     // Redirect to the dashboard if authenticated
+  //     window.location.href = '/dashboard';
+  //   } else {
+  //     // Redirect to the landing page if not authenticated
+  //     window.location.href = '/';
+  //   }
+  // })
+
+
+  // useEffect(() => {
+  //   // Get token for testing
+  //   const getSessionToken = async () => {
+  //     const clerkSession = Clerk.session;
+  //     const getSessionToken = await clerkSession.getToken();
+  //     console.log('Testing token: ', getSessionToken);
+  //   };
+
+  //   if (process.env.NODE_ENV === 'development') {
+  //     getSessionToken();
+  //   }
+  // } , []);
+
   return (
     <Routes>
       {/* Home Route */}
@@ -42,7 +69,6 @@ function App() {
           <>
             <SignedIn>
               <ProtectedPage >
-                <Dashboard />
               </ProtectedPage>
             </SignedIn>
             <SignedOut>
