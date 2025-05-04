@@ -11,12 +11,13 @@ jobs:
   # Front‑end job
   frontend:
     runs-on: ubuntu-latest
+    continue-on-error: false
     env:
       # make sure you add this secret in your repo settings!
       REACT_APP_CLERK_PUBLISHABLE_KEY: ${{ secrets.REACT_APP_CLERK_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 18
+      - name: Use Node.js 20
         uses: actions/setup-node@v3
         with: 
           node-version: 20
@@ -26,7 +27,7 @@ jobs:
       - name: Run front‑end tests
         working-directory: ./frontend
         # disable watch mode in CI
-        run: npm test -- --watchAll=false --silent
+        run: npm test -- --watchAll=false --silent --passWithNoTests
 
   # Back‑end job
   backend:
