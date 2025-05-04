@@ -1,8 +1,8 @@
 // App.js
 import React from 'react';
-import { BrowserRouter as Routes, Route, Router } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { SignedIn, SignedOut, SignIn, SignUp, RedirectToSignIn } from '@clerk/clerk-react';
-import ProtectedPage from './pages/ProtectedPage/ProtectedPage';
+import ProtectedPage from './pages/ProtectedPage/ProtectedPage.js';
 import Landing from "./pages/Landing/Landing.js";
 // import Dashboard from "./pages/Dashboard/Dashboard.js";
 import "./App.css";
@@ -68,8 +68,7 @@ function App() {
         element={
           <>
             <SignedIn>
-              <ProtectedPage >
-              </ProtectedPage>
+              <ProtectedPage />
             </SignedIn>
             <SignedOut>
               <RedirectToSignIn />
