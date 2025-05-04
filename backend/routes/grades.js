@@ -5,7 +5,7 @@ import { gradesCacheMiddleware } from '../middleware/gradesCache.js';
 const router = express.Router();
 
 // get grade
-router.get("/", gradesCacheMiddleware, async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const grades = await GradeSchema.find( { userId: req.auth.user.id } );
         res.json(grades);
@@ -15,21 +15,21 @@ router.get("/", gradesCacheMiddleware, async (req, res) => {
 });
 
 // add a grade
-router.post("/", async (req, res) => {
+// router.post("/", async (req, res) => {
 
-    const { evalName, grade } = req.body;
-    try {
-        const newGrade = new GradeSchema({
-            userId: req.auth.user.id,
-            evalName,
-            grade
-        });
-        await newGrade.save();
-        res.status(201).json(newGrade);
-    } catch (error) {
-        res.status(400).json({ message: "Error saving grade" });
-    }
- });
+//     const { evalName, grade } = req.body;
+//     try {
+//         const newGrade = new GradeSchema({
+//             userId: req.auth.user.id,
+//             evalName,
+//             grade
+//         });
+//         await newGrade.save();
+//         res.status(201).json(newGrade);
+//     } catch (error) {
+//         res.status(400).json({ message: "Error saving grade" });
+//     }
+//  });
 
  // update a grade
 //  router.put("/:id", async (req, res) => {
