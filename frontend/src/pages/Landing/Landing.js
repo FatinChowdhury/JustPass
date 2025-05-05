@@ -1,29 +1,26 @@
 import { React, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import "./Landing.css";
 
 const Landing = () => {
   const [link, setLink] = useState("");
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   return (
     <div className="layout-container">
       <div className="main-content">
         <div className="left-panel">
-          <img src="/logo.png" alt="Logo" className="logo-image" />
+          <img src="./JustPass_logo.png" alt="Logo" className="logo-image" loading="lazy" />
         </div>
         <div className="right-panel">
-          <h1>myBookings</h1>
-          <p>Book your first meeting now!</p>
-          <a className="start-button" href="/home">
-            Home
-          </a>
+          <h1>JustPass</h1>
+          <h2><p>Track your grades and pass that class!</p></h2>
+          
           <p>
             Need to login?{" "}
             <a className="login-here" href="/sign-in">
               Login
             </a>
           </p>
-          <p>Have a Booking URL?</p>
         </div>
       </div>
     </div>

@@ -1,0 +1,135 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg);
+    padding: 1em 1em;
+    height: 50px;
+    width: 90%;
+  
+  }
+  
+  .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+  
+  img.navbar-logo {
+    height: 120px;
+    width: 120px;
+    margin-right: 2%; 
+  }
+  
+  .navbar-title {
+    font-size: 150%; 
+    color: var(--accent1);
+    display: flex;
+    text-decoration: none;
+    font-weight: bold;
+    align-items: center;
+    font-family: monospace;
+  }
+  
+  .navbar-right {
+    display: flex;
+    gap: 5%;
+    align-items: center;
+    margin-right: 2%; 
+  }
+  
+  .navbar-link {
+    font-size: 100%;
+    color: var(--txt);
+    text-decoration: none;
+    transition: color 0.3s;
+    padding-top: 1%;
+  }
+  
+  .navbar-link:hover {
+    color: var(--accent1);
+  }
+  
+  .navbar-link.active {
+    color: var(--accent1);
+    font-weight: bold;
+  }
+  
+  .navbar-right .logout-button {
+    background-color: var(--accent1);
+    color: var(--txt);
+    border: none;
+    padding: 2%;
+    border-radius: 5px;
+    font-size: 100%;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  
+  .navbar-right .logout-button:hover {
+    background-color: var(--txt);
+    color: var(--accent1);
+  
+  }
+  
+  .dropbtn {
+    color: #19325b;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+  }
+  
+  .dropdown {
+    position: relative;
+    display: none; 
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--txt);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    right: 0;
+  }
+  
+  .dropdown-content a {
+    color: var(--bg);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
+  
+  .dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
+  .dropdown:hover .dropbtn {
+    background-color: var(--accent2);
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    .navbar-right {
+      display: none; 
+    }
+  
+    .dropdown {
+      display: inline-block; 
+    }
+  
+    .dropbtn {
+        background-color: var(--txt);
+        color: var(--accent2);
+        padding: 10px 9px;
+        text-decoration: none;
+  
+    }
+  
+  
+  }
