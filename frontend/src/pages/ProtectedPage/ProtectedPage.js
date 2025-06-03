@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Protect, UserButton } from "@clerk/clerk-react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Protect, UserButton, useAuth } from "@clerk/clerk-react";
 import "./protectedpage.css"; // Make sure to import your CSS file
 import { Line } from "react-chartjs-2";
 import {
@@ -11,11 +12,13 @@ import {
   Tooltip,
   Legend
 } from "chart.js";
+// import { response } from "express"; 
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 const ProtectedPage = () => {
   const [grades, setGrades] = useState([]);
+  const [course, setCourse] = useState("");
   const [name, setName] = useState("");
   const [grade, setGrade] = useState("");
   const [weight, setWeight] = useState("");
@@ -23,8 +26,62 @@ const ProtectedPage = () => {
   const [remainingWeight, setRemainingWeight] = useState("");
   const [requiredGrade, setRequiredGrade] = useState(null);
 
+  const { getToken } = useAuth();
+
+  const fetchGrades = async () => {
+    try {
+      const token = await getToken();
+      const response = await axios.get('/api/grades', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      console.log(response.data);
+    }
+    catch (error) {
+      console.error("Error fetching grades:", error);
+    }
+  }
+
+  useEffect(() => {
+    fetchGrades();
+  }, [getToken]);
+
+  const updateGrades = async () => {
+    try {
+      const token = await getToken();
+      const response = await axios.put('/api/grades', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setGrades(response.data);
+    } catch (error) {
+      console.error("Error updating grades:", error);
+    }
+  };
+  // boilerplate:
+  /* 
+  
+  !!! FETCHING GRADES FROM THE BACKEND !!!
+
+  useEffect(() => {}, []);
+  --> 
+  useEffect(() => {
+    axios.get('/api/grades')
+      .then (response => smth)
+      .catch (error => console.error(smth));
+  }, []);
+
+  */
+  // useEffect(() => {
+  //   axios.get('/api/grades')
+  //     .then (response => setGrades(response.data))
+  //     .catch (error => console.error("Error fetching grades:", error));
+  // }, []);
+
   const handleAdd = () => {
-    if (!name || isNaN(grade) || isNaN(weight)) return;
+    if (!name || isNaN(grade) || isNaN(weight) || !course) return;
     const newWeight = parseFloat(weight);
     const currentWeight = grades.reduce((acc, g) => acc + g.weight, 0);
 
@@ -33,10 +90,23 @@ const ProtectedPage = () => {
         return;
     }
 
-    setGrades([...grades, { name, grade: parseFloat(grade), weight: newWeight }]);
+    axios.post('/api/grades', {
+      course,
+      evalName: name,
+      grade: parseFloat(grade),
+      weight: newWeight
+    })
+    .then(response => {
+
+
+    // setGrades([...grades, { name, grade: parseFloat(grade), weight: newWeight }]);
+    setGrades([...grades, response.data]);
+    setCourse("");
     setName("");
     setGrade("");
     setWeight("");
+    })
+    .catch(error => console.error("Error adding grade:", error));
   };
 
   const calculateWeightedGrade = (subset) => {
@@ -67,7 +137,7 @@ const ProtectedPage = () => {
   }
 
   const chartData = {
-    labels: grades.map((g) => g.name),
+    labels: grades.map((g) => g.evalName),
     datasets: [
       {
         label: "Cumulative Grade (%)",
@@ -84,6 +154,7 @@ const ProtectedPage = () => {
         <UserButton />
       <h2>JustPass</h2>
       <div className="input-row">
+        <input value={course} onChange={(e) => setCourse(e.target.value)} placeholder="Course" />
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Assessment" />
         <input value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="Grade %" type="number" />
         <input value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Weight %" type="number" />
