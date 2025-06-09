@@ -13,14 +13,14 @@ class Grade {
 
     // Create a new grade
     async save() {
-        const db = await createConnection();
+        const pool = await createConnection();
         const query = `
             INSERT INTO grades (userId, course, evalName, grade, weight)
             VALUES (?, ?, ?, ?, ?)
         `;
         
         try {
-            const result = await db.run(query, [
+            const [result] = await pool.execute(query, [
                 this.userId,
                 this.course,
                 this.evalName,
@@ -28,7 +28,7 @@ class Grade {
                 this.weight
             ]);
             
-            this.id = result.lastID;
+            this.id = result.insertId;
             return this;
         } catch (error) {
             throw new Error(`Error saving grade: ${error.message}`);
@@ -37,7 +37,7 @@ class Grade {
 
     // Find grades with optional filter
     static async find(filter = {}) {
-        const db = await createConnection();
+        const pool = await createConnection();
         let query = 'SELECT * FROM grades WHERE 1=1';
         const params = [];
 
@@ -59,7 +59,7 @@ class Grade {
         query += ' ORDER BY date DESC';
 
         try {
-            const rows = await db.all(query, params);
+            const [rows] = await pool.execute(query, params);
             return rows.map(row => new Grade(row));
         } catch (error) {
             throw new Error(`Error finding grades: ${error.message}`);
@@ -68,12 +68,12 @@ class Grade {
 
     // Find grade by ID
     static async findById(id) {
-        const db = await createConnection();
+        const pool = await createConnection();
         const query = 'SELECT * FROM grades WHERE id = ?';
         
         try {
-            const row = await db.get(query, [id]);
-            return row ? new Grade(row) : null;
+            const [rows] = await pool.execute(query, [id]);
+            return rows.length > 0 ? new Grade(rows[0]) : null;
         } catch (error) {
             throw new Error(`Error finding grade by ID: ${error.message}`);
         }
@@ -81,7 +81,7 @@ class Grade {
 
     // Update grade by ID
     static async findByIdAndUpdate(id, updateData, options = {}) {
-        const db = await createConnection();
+        const pool = await createConnection();
         const query = `
             UPDATE grades 
             SET course = ?, evalName = ?, grade = ?, weight = ?
@@ -89,7 +89,7 @@ class Grade {
         `;
         
         try {
-            const result = await db.run(query, [
+            const [result] = await pool.execute(query, [
                 updateData.course,
                 updateData.evalName,
                 updateData.grade,
@@ -97,7 +97,7 @@ class Grade {
                 id
             ]);
 
-            if (result.changes === 0) {
+            if (result.affectedRows === 0) {
                 return null;
             }
 
@@ -113,7 +113,7 @@ class Grade {
 
     // Delete grade by ID
     static async findByIdAndDelete(id) {
-        const db = await createConnection();
+        const pool = await createConnection();
         
         try {
             // First get the grade to return it
@@ -121,13 +121,13 @@ class Grade {
             if (!grade) return null;
 
             const query = 'DELETE FROM grades WHERE id = ?';
-            const result = await db.run(query, [id]);
+            const [result] = await pool.execute(query, [id]);
             
-            return result.changes > 0 ? grade : null;
+            return result.affectedRows > 0 ? grade : null;
         } catch (error) {
             throw new Error(`Error deleting grade: ${error.message}`);
         }
     }
 }
 
-export default Grade; 
+export default Grade;

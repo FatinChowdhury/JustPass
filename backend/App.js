@@ -1,15 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
-import GradeSchema from './models/Grade.js';
-// import GradesRouter from "./routes/grades.js";
+import Grade from './models/Grade.js';
+import { createConnection, closeConnection } from './database.js';
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 
-
-
 const app = express();
+
 // What it does: Allows cross-origin requests 
 // (e.g., from a frontend at http://localhost:3000 to a backend at http://localhost:3001)
 // like in our case
@@ -20,107 +18,132 @@ app.use(cors());
 app.use(express.json());
 // Order: cors() first (to allow requests), then express.json() (to parse them).
 
-
-const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
-
-async function run() {
+// Initialize SQLite database connection
+async function initializeDatabase() {
   try {
-    // Create a Mongoose client with a MongoClientOptions object to set the Stable API version
-    mongoose.connection.once('open', () => {
-      console.log("MongoDB connection established successfully.");
-    });
-
-    mongoose.connection.on('error', (err) => {
-      console.error("MongoDB connection error:", err);
-    });
-    await mongoose.connect(process.env.MONGODB_URI, clientOptions);
-    await mongoose.connection.db.admin().command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await mongoose.disconnect();
-    // REMOVED
+    await createConnection();
+    console.log("Database initialized successfully!");
+  } catch (error) {
+    console.error("Failed to initialize database:", error);
+    process.exit(1);
   }
 }
-run().catch(console.dir);
 
-
-// mongoose.connect("mongodb://localhost:27017/gradeTracker");
-// mongoose.connection.on("connected", () => {
-//     console.log("MongoDB connected successfully!");
-// });
-
-// mongoose.connection.on("error", (err) => {
-//     console.error("MongoDB connection error:", err);
-// });
+// Initialize database connection
+initializeDatabase();
 
 // ROUTES
-// app.use("/api/grades", GradesRouter)
-app.get("/", ClerkExpressRequireAuth(), (req, res) => {
-    const courseFilter = req.query.course;
-    const userId = req.auth.user.id;
-    let filter = { userId };
-    if (courseFilter) filter.course = {$regex: courseFilter, $options: 'i'}; // case insensitive regex
-    const grades = GradeSchema.find(filter);
-    grades
-      .then((grades) => {
-          if (!grades || grades.length === 0) {
+app.get("/", ClerkExpressRequireAuth(), async (req, res) => {
+    try {
+        const courseFilter = req.query.course;
+        const userId = req.auth.user.id;
+        let filter = { userId };
+        
+        if (courseFilter) {
+            filter.course = { $regex: courseFilter, $options: 'i' }; // This will be handled in the Grade.find method
+        }
+        
+        const grades = await Grade.find(filter);
+        
+        if (!grades || grades.length === 0) {
             return res.status(200).json([]);
-          }
-          return res.status(200).json(grades);
-      })
-      .catch((error) => res.status(500).json( { message: "Error fetching grades", error: error.message }));
+        }
+        
+        return res.status(200).json(grades);
+    } catch (error) {
+        console.error("Error in GET /:", error);
+        res.status(500).json({ 
+            message: "Error fetching grades", 
+            error: error.message 
+        });
+    }
 });
 
-app.post("/", ClerkExpressRequireAuth(), (req, res) => {
-  const { course, evalName, grade, weight } = req.body;
-  if (!course || !evalName || grade == null || weight == null) {
-    return res.status(400).json({ message : "Error: Missing required fields" });
-  }
-  const newGrade = new GradeSchema( {
-    userId: req.auth.user.id,
-    course,
-    evalName,
-    grade,
-    weight
-  });
-  newGrade.save()
-    .then(() => res.status(201).json(newGrade))
-    .catch((error) => res.status(500).json( {message: "Error saving grade", error: error.message} ));
+app.post("/", ClerkExpressRequireAuth(), async (req, res) => {
+    try {
+        const { course, evalName, grade, weight } = req.body;
+        
+        if (!course || !evalName || grade == null || weight == null) {
+            return res.status(400).json({ message: "Error: Missing required fields" });
+        }
+        
+        const newGrade = new Grade({
+            userId: req.auth.user.id,
+            course,
+            evalName,
+            grade,
+            weight
+        });
+        
+        await newGrade.save();
+        res.status(201).json(newGrade);
+    } catch (error) {
+        console.error("Error in POST /:", error);
+        res.status(500).json({ 
+            message: "Error saving grade", 
+            error: error.message 
+        });
+    }
 });
 
-app.put("/:id", ClerkExpressRequireAuth(), (req, res) => {
-  const { course, evalName, grade, weight } = req.body;
-  if (!course || !evalName || grade == null || weight == null) {
-    return res.status(400).json({ message: "Error: Missing required fields" });
-  }
-  GradeSchema.findByIdAndUpdate(
-    req.params.id,
-    { course, evalName, grade, weight },
-    { new: true }
-  )
-    .then((updatedGrade) => {
-      if (!updatedGrade) {
-        return res.status(404).json({ message: "Grade not found" });
-      }
-      res.status(200).json(updatedGrade);
-    })
-    .catch((error) => res.status(500).json( {message: "Error updating grade", error: error.message} ));
- });
-
-app.delete("/:id", ClerkExpressRequireAuth(), (req, res) => {
-  GradeSchema.findByIdAndDelete(req.params.id)
-    .then((deletedGrade) => {
-      if (!deletedGrade) {
-        return res.status(404).json({ message: "Grade not found" });
-      }
-      res.status(200).json({ message: "Grade deleted successfully" });
-    })
-    .catch((error) => res.status(500).json( {message: "Error deleting grade", error: error.message} ));
+app.put("/:id", ClerkExpressRequireAuth(), async (req, res) => {
+    try {
+        const { course, evalName, grade, weight } = req.body;
+        
+        if (!course || !evalName || grade == null || weight == null) {
+            return res.status(400).json({ message: "Error: Missing required fields" });
+        }
+        
+        const updatedGrade = await Grade.findByIdAndUpdate(
+            req.params.id,
+            { course, evalName, grade, weight },
+            { new: true }
+        );
+        
+        if (!updatedGrade) {
+            return res.status(404).json({ message: "Grade not found" });
+        }
+        
+        res.status(200).json(updatedGrade);
+    } catch (error) {
+        console.error("Error in PUT /:id:", error);
+        res.status(500).json({ 
+            message: "Error updating grade", 
+            error: error.message 
+        });
+    }
 });
 
+app.delete("/:id", ClerkExpressRequireAuth(), async (req, res) => {
+    try {
+        const deletedGrade = await Grade.findByIdAndDelete(req.params.id);
+        
+        if (!deletedGrade) {
+            return res.status(404).json({ message: "Grade not found" });
+        }
+        
+        res.status(200).json({ message: "Grade deleted successfully" });
+    } catch (error) {
+        console.error("Error in DELETE /:id:", error);
+        res.status(500).json({ 
+            message: "Error deleting grade", 
+            error: error.message 
+        });
+    }
+});
 
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    console.log('Received SIGINT. Graceful shutdown...');
+    await closeConnection();
+    process.exit(0);
+});
 
+process.on('SIGTERM', async () => {
+    console.log('Received SIGTERM. Graceful shutdown...');
+    await closeConnection();
+    process.exit(0);
+});
 
 app.listen(3001, () => {
     console.log("Server running on http://localhost:3001");
