@@ -36,12 +36,14 @@ const ProtectedPage = () => {
           Authorization: `Bearer ${token}`
         }
       });
-      console.log(response.data);
+      setGrades(response.data);
     }
     catch (error) {
-      console.error("Error fetching grades:", error);
+      // Error fetching grades
     }
   }
+
+  //listen to id change in route, then trigger fetch class
 
   useEffect(() => {
     fetchGrades();
@@ -57,30 +59,11 @@ const ProtectedPage = () => {
       });
       setGrades(response.data);
     } catch (error) {
-      console.error("Error updating grades:", error);
+      // Error updating grades
     }
   };
-  // boilerplate:
-  /* 
-  
-  !!! FETCHING GRADES FROM THE BACKEND !!!
 
-  useEffect(() => {}, []);
-  --> 
-  useEffect(() => {
-    axios.get('/api/grades')
-      .then (response => smth)
-      .catch (error => console.error(smth));
-  }, []);
-
-  */
-  // useEffect(() => {
-  //   axios.get('/api/grades')
-  //     .then (response => setGrades(response.data))
-  //     .catch (error => console.error("Error fetching grades:", error));
-  // }, []);
-
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!name || isNaN(grade) || isNaN(weight) || !course) return;
     const newWeight = parseFloat(weight);
     const currentWeight = grades.reduce((acc, g) => acc + g.weight, 0);
@@ -90,23 +73,27 @@ const ProtectedPage = () => {
         return;
     }
 
-    axios.post('/api/grades', {
-      course,
-      evalName: name,
-      grade: parseFloat(grade),
-      weight: newWeight
-    })
-    .then(response => {
+    try {
+      const token = await getToken();
+      const response = await axios.post('/api/grades', {
+        course,
+        evalName: name,
+        grade: parseFloat(grade),
+        weight: newWeight
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
 
-
-    // setGrades([...grades, { name, grade: parseFloat(grade), weight: newWeight }]);
-    setGrades([...grades, response.data]);
-    setCourse("");
-    setName("");
-    setGrade("");
-    setWeight("");
-    })
-    .catch(error => console.error("Error adding grade:", error));
+      setGrades([...grades, response.data]);
+      setCourse("");
+      setName("");
+      setGrade("");
+      setWeight("");
+    } catch (error) {
+      alert("Error adding grade: " + (error.response?.data?.message || error.message));
+    }
   };
 
   const calculateWeightedGrade = (subset) => {
@@ -166,7 +153,21 @@ const ProtectedPage = () => {
           Current Final Grade:{" "}
           <strong>{calculateWeightedGrade(grades).toFixed(2)}%</strong>
         </p>
+        <p>
+          Total Weight Used: <strong>{grades.reduce((acc, g) => acc + g.weight, 0)}%</strong>
+        </p>
       </div>
+
+      {grades.length > 0 && (
+        <div className="grades-list">
+          <h3>Your Grades:</h3>
+          {grades.map((g, index) => (
+            <div key={index} className="grade-item">
+              <span>{g.course} - {g.evalName}: {g.grade}% (Weight: {g.weight}%)</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <Line data={chartData} />
         <div className="predictor">

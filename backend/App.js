@@ -5,6 +5,7 @@ import cors from "cors";
 import Grade from './models/Grade.js';
 import { createConnection, closeConnection } from './database.js';
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
+import gradesRouter from './routes/grades.js';
 
 const app = express();
 
@@ -33,103 +34,12 @@ async function initializeDatabase() {
 initializeDatabase();
 
 // ROUTES
-app.get("/", ClerkExpressRequireAuth(), async (req, res) => {
-    try {
-        const courseFilter = req.query.course;
-        const userId = req.auth.user.id;
-        let filter = { userId };
-        
-        if (courseFilter) {
-            filter.course = { $regex: courseFilter, $options: 'i' }; // This will be handled in the Grade.find method
-        }
-        
-        const grades = await Grade.find(filter);
-        
-        if (!grades || grades.length === 0) {
-            return res.status(200).json([]);
-        }
-        
-        return res.status(200).json(grades);
-    } catch (error) {
-        console.error("Error in GET /:", error);
-        res.status(500).json({ 
-            message: "Error fetching grades", 
-            error: error.message 
-        });
-    }
-});
+// Use the grades router for API routes
+app.use('/api/grades', gradesRouter);
 
-app.post("/", ClerkExpressRequireAuth(), async (req, res) => {
-    try {
-        const { course, evalName, grade, weight } = req.body;
-        
-        if (!course || !evalName || grade == null || weight == null) {
-            return res.status(400).json({ message: "Error: Missing required fields" });
-        }
-        
-        const newGrade = new Grade({
-            userId: req.auth.user.id,
-            course,
-            evalName,
-            grade,
-            weight
-        });
-        
-        await newGrade.save();
-        res.status(201).json(newGrade);
-    } catch (error) {
-        console.error("Error in POST /:", error);
-        res.status(500).json({ 
-            message: "Error saving grade", 
-            error: error.message 
-        });
-    }
-});
-
-app.put("/:id", ClerkExpressRequireAuth(), async (req, res) => {
-    try {
-        const { course, evalName, grade, weight } = req.body;
-        
-        if (!course || !evalName || grade == null || weight == null) {
-            return res.status(400).json({ message: "Error: Missing required fields" });
-        }
-        
-        const updatedGrade = await Grade.findByIdAndUpdate(
-            req.params.id,
-            { course, evalName, grade, weight },
-            { new: true }
-        );
-        
-        if (!updatedGrade) {
-            return res.status(404).json({ message: "Grade not found" });
-        }
-        
-        res.status(200).json(updatedGrade);
-    } catch (error) {
-        console.error("Error in PUT /:id:", error);
-        res.status(500).json({ 
-            message: "Error updating grade", 
-            error: error.message 
-        });
-    }
-});
-
-app.delete("/:id", ClerkExpressRequireAuth(), async (req, res) => {
-    try {
-        const deletedGrade = await Grade.findByIdAndDelete(req.params.id);
-        
-        if (!deletedGrade) {
-            return res.status(404).json({ message: "Grade not found" });
-        }
-        
-        res.status(200).json({ message: "Grade deleted successfully" });
-    } catch (error) {
-        console.error("Error in DELETE /:id:", error);
-        res.status(500).json({ 
-            message: "Error deleting grade", 
-            error: error.message 
-        });
-    }
+// Health check route
+app.get('/health', (req, res) => {
+    res.status(200).json({ message: 'Server is running', database: 'SQLite' });
 });
 
 // Graceful shutdown

@@ -8,7 +8,6 @@ function NavBar() {
     const handleLogout = () => {
         // Perform logout logic here
         // For example, clear user session, redirect to login page, etc.
-        console.log("User logged out");
         navigate("/sign-up");
     };
   

@@ -5,7 +5,7 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import path from "path";
 
-const DB_PATH = process.env.DB_PATH || './grades.db';
+const DB_PATH = process.env.DB_PATH || './justpass.db';
 
 let db = null;
 
