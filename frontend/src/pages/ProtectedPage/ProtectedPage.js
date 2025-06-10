@@ -25,13 +25,24 @@ const ProtectedPage = () => {
   const [target, setTarget] = useState("");
   const [remainingWeight, setRemainingWeight] = useState("");
   const [requiredGrade, setRequiredGrade] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    course: "",
+    evalName: "",
+    grade: "",
+    weight: ""
+  });
+  const [showNewCourseModal, setShowNewCourseModal] = useState(false);
+  const [newCourseName, setNewCourseName] = useState("");
 
   const { getToken } = useAuth();
 
-  const fetchGrades = async () => {
+  const fetchGrades = async (courseFilter = selectedCourse) => {
     try {
       const token = await getToken();
-      const response = await axios.get('/api/grades', {
+      const url = courseFilter ? `/api/grades?course=${encodeURIComponent(courseFilter)}` : '/api/grades';
+      const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -39,7 +50,7 @@ const ProtectedPage = () => {
       setGrades(response.data);
     }
     catch (error) {
-      // Error fetching grades
+      console.error("Error fetching grades:", error);
     }
   }
 
@@ -47,21 +58,7 @@ const ProtectedPage = () => {
 
   useEffect(() => {
     fetchGrades();
-  }, [getToken]);
-
-  const updateGrades = async () => {
-    try {
-      const token = await getToken();
-      const response = await axios.put('/api/grades', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      setGrades(response.data);
-    } catch (error) {
-      // Error updating grades
-    }
-  };
+  }, [getToken, selectedCourse]);
 
   const handleAdd = async () => {
     if (!name || isNaN(grade) || isNaN(weight) || !course) return;
@@ -96,6 +93,81 @@ const ProtectedPage = () => {
     }
   };
 
+  const handleEdit = (gradeItem) => {
+    setEditingId(gradeItem.id);
+    setEditForm({
+      course: gradeItem.course,
+      evalName: gradeItem.evalName,
+      grade: gradeItem.grade,
+      weight: gradeItem.weight
+    });
+  };
+
+  const handleUpdate = async () => {
+    if (!editForm.evalName || isNaN(editForm.grade) || isNaN(editForm.weight) || !editForm.course) {
+      alert("Please fill in all fields correctly");
+      return;
+    }
+
+    try {
+      const token = await getToken();
+      const response = await axios.put(`/api/grades/${editingId}`, {
+        course: editForm.course,
+        evalName: editForm.evalName,
+        grade: parseFloat(editForm.grade),
+        weight: parseFloat(editForm.weight)
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setGrades(grades.map(g => g.id === editingId ? response.data : g));
+      setEditingId(null);
+      setEditForm({ course: "", evalName: "", grade: "", weight: "" });
+    } catch (error) {
+      alert("Error updating grade: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this grade?")) return;
+
+    try {
+      const token = await getToken();
+      await axios.delete(`/api/grades/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setGrades(grades.filter(g => g.id !== id));
+    } catch (error) {
+      alert("Error deleting grade: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm({ course: "", evalName: "", grade: "", weight: "" });
+  };
+
+  const handleNewCourse = () => {
+    if (newCourseName.trim()) {
+      setSelectedCourse(newCourseName.trim());
+      setCourse(newCourseName.trim()); // Pre-fill the course input
+      setShowNewCourseModal(false);
+      setNewCourseName("");
+      // Clear existing grades for the new course view
+      setGrades([]);
+    }
+  };
+
+  const cancelNewCourse = () => {
+    setShowNewCourseModal(false);
+    setNewCourseName("");
+  };
+
   const calculateWeightedGrade = (subset) => {
     let totalWeight = 0;
     let weightedSum = 0;
@@ -123,11 +195,14 @@ const ProtectedPage = () => {
 
   }
 
+  // Get unique courses for sidebar
+  const uniqueCourses = [...new Set(grades.map(g => g.course))];
+
   const chartData = {
     labels: grades.map((g) => g.evalName),
     datasets: [
       {
-        label: "Cumulative Grade (%)",
+        label: `Cumulative Grade (%)${selectedCourse ? ` - ${selectedCourse}` : ''}`,
         data: grades.map((_, i) => calculateWeightedGrade(grades.slice(0, i + 1)).toFixed(2)),
         fill: false,
         borderColor: "rgb(75, 192, 192)",
@@ -137,63 +212,158 @@ const ProtectedPage = () => {
   };
 
   return (
-    <div className="grade-tracker">
-        <UserButton />
-      <h2>JustPass</h2>
-      <div className="input-row">
-        <input value={course} onChange={(e) => setCourse(e.target.value)} placeholder="Course" />
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Assessment" />
-        <input value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="Grade %" type="number" />
-        <input value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Weight %" type="number" />
-        <button onClick={handleAdd}>Add</button>
-      </div>
-
-      <div className="summary">
-        <p>
-          Current Final Grade:{" "}
-          <strong>{calculateWeightedGrade(grades).toFixed(2)}%</strong>
-        </p>
-        <p>
-          Total Weight Used: <strong>{grades.reduce((acc, g) => acc + g.weight, 0)}%</strong>
-        </p>
-      </div>
-
-      {grades.length > 0 && (
-        <div className="grades-list">
-          <h3>Your Grades:</h3>
-          {grades.map((g, index) => (
-            <div key={index} className="grade-item">
-              <span>{g.course} - {g.evalName}: {g.grade}% (Weight: {g.weight}%)</span>
-            </div>
+    <div className="app-container">
+      {/* Sidebar */}
+      <div className="sidebar">
+        <div className="sidebar-header">
+          <h3>Courses</h3>
+          <button 
+            className="add-course-btn"
+            onClick={() => setShowNewCourseModal(true)}
+            title="Add New Course"
+          >
+            +
+          </button>
+        </div>
+        <div className="course-list">
+          <button 
+            className={`course-item ${selectedCourse === "" ? "active" : ""}`}
+            onClick={() => setSelectedCourse("")}
+          >
+            All Courses
+          </button>
+          {uniqueCourses.map((courseName, index) => (
+            <button
+              key={index}
+              className={`course-item ${selectedCourse === courseName ? "active" : ""}`}
+              onClick={() => setSelectedCourse(courseName)}
+            >
+              {courseName}
+            </button>
           ))}
         </div>
-      )}
+      </div>
 
-      <Line data={chartData} />
-        <div className="predictor">
-            <h3>What do I need on my final?</h3>
-            <input
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-                placeholder="Target Grade %"
-                type="number"
-            />
-            <input
-                value={remainingWeight}
-                onChange={(e) => setRemainingWeight(e.target.value)}
-                placeholder="Final Exam Weight %"
-                type="number"
-            />
-            <button onClick={calculateNeededGrade}>Calculate</button>
-            {requiredGrade && (
-                <p>
-                    You need <strong>{requiredGrade}%</strong> on your final to get <strong>{target}%</strong> overall.
-                </p>
-            )}
+      {/* Main Content */}
+      <div className="main-content">
+        <div className="grade-tracker">
+          <UserButton />
+          <h2>JustPass</h2>
+          <div className="input-row">
+            <input value={course} onChange={(e) => setCourse(e.target.value)} placeholder="Course" />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Assessment" />
+            <input value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="Grade %" type="number" />
+            <input value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Weight %" type="number" />
+            <button onClick={handleAdd}>Add</button>
+          </div>
+
+          <div className="summary">
+            <p>
+              Current Final Grade:{" "}
+              <strong>{calculateWeightedGrade(grades).toFixed(2)}%</strong>
+            </p>
+            <p>
+              Total Weight Used: <strong>{grades.reduce((acc, g) => acc + g.weight, 0)}%</strong>
+            </p>
+          </div>
+
+          {grades.length > 0 && (
+            <div className="grades-list">
+              <h3>Your Grades {selectedCourse && `- ${selectedCourse}`}:</h3>
+                             {grades.map((g) => (
+                 <div key={g.id} className="grade-item">
+                   {editingId === g.id ? (
+                    // Edit mode
+                    <div className="edit-form">
+                      <input 
+                        value={editForm.course} 
+                        onChange={(e) => setEditForm({...editForm, course: e.target.value})}
+                        placeholder="Course"
+                      />
+                      <input 
+                        value={editForm.evalName} 
+                        onChange={(e) => setEditForm({...editForm, evalName: e.target.value})}
+                        placeholder="Assessment"
+                      />
+                      <input 
+                        value={editForm.grade} 
+                        onChange={(e) => setEditForm({...editForm, grade: e.target.value})}
+                        placeholder="Grade %"
+                        type="number"
+                      />
+                      <input 
+                        value={editForm.weight} 
+                        onChange={(e) => setEditForm({...editForm, weight: e.target.value})}
+                        placeholder="Weight %"
+                        type="number"
+                      />
+                      <button onClick={handleUpdate} className="save-btn">Save</button>
+                      <button onClick={cancelEdit} className="cancel-btn">Cancel</button>
+                    </div>
+                  ) : (
+                    // View mode
+                    <div className="grade-display">
+                      <span>{g.course} - {g.evalName}: {g.grade}% (Weight: {g.weight}%)</span>
+                      <div className="grade-actions">
+                        <button onClick={() => handleEdit(g)} className="edit-btn">Edit</button>
+                                                 <button onClick={() => handleDelete(g.id)} className="delete-btn">Delete</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <Line data={chartData} />
+          <div className="predictor">
+              <h3>What do I need on my final?</h3>
+              <input
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                  placeholder="Target Grade %"
+                  type="number"
+              />
+              <input
+                  value={remainingWeight}
+                  onChange={(e) => setRemainingWeight(e.target.value)}
+                  placeholder="Final Exam Weight %"
+                  type="number"
+              />
+              <button onClick={calculateNeededGrade}>Calculate</button>
+              {requiredGrade && (
+                  <p>
+                      You need <strong>{requiredGrade}%</strong> on your final to get <strong>{target}%</strong> overall.
+                  </p>
+              )}
+          </div>
         </div>
-    </div>
+      </div>
 
-    
+      {/* New Course Modal */}
+      {showNewCourseModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Add New Course</h3>
+            <input
+              type="text"
+              value={newCourseName}
+              onChange={(e) => setNewCourseName(e.target.value)}
+              placeholder="Enter course name (e.g., COMP310)"
+              autoFocus
+            />
+            <div className="modal-actions">
+              <button onClick={handleNewCourse} disabled={!newCourseName.trim()}>
+                Add Course
+              </button>
+              <button onClick={cancelNewCourse} className="cancel-btn">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

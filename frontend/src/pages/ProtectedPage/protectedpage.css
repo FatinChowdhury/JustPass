@@ -1,63 +1,384 @@
-.grade-tracker {
-    width: 90%;
-    max-width: 700px;
-    margin: auto;
-    padding: 20px;
-    font-family: sans-serif;
-    background: #f5f5f5;
-    border-radius: 8px;
-  }
-  
-  .input-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .input-row input {
-    padding: 8px;
-    flex: 1;
-  }
-  
-  .input-row button {
-    padding: 8px 12px;
-    background: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .input-row button:hover {
-    background: #0056b3;
-  }
-  
-  .summary {
-    margin-bottom: 20px;
-    font-size: 1.1em;
-  }
+/* Main app layout */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f8f9fa;
+}
 
-  .predictor {
-    margin-top: 30px;
-    background: #e8f0ff;
-    padding: 15px;
-    border-radius: 6px;
-  }
-  
-  .predictor input {
-    margin-right: 10px;
-    padding: 6px;
-    width: 180px;
-  }
-  
-  .predictor button {
-    padding: 6px 12px;
-    background: #28a745;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
+/* Sidebar styles */
+.sidebar {
+  width: 250px;
+  background: #2c3e50;
+  color: white;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sidebar h3 {
+  margin: 0;
+  color: #ecf0f1;
+  font-size: 1.2em;
+}
+
+.add-course-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #3498db;
+  color: white;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-course-btn:hover {
+  background: #2980b9;
+  transform: scale(1.1);
+}
+
+.course-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.course-item {
+  background: transparent;
+  border: 1px solid #34495e;
+  color: #ecf0f1;
+  padding: 12px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  font-size: 14px;
+}
+
+.course-item:hover {
+  background: #34495e;
+  border-color: #3498db;
+}
+
+.course-item.active {
+  background: #3498db;
+  border-color: #3498db;
+  color: white;
+}
+
+/* Main content area */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+.grade-tracker {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: sans-serif;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.input-row input {
+  padding: 8px;
+  flex: 1;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.input-row button {
+  padding: 8px 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.input-row button:hover {
+  background: #0056b3;
+}
+
+.summary {
+  margin-bottom: 20px;
+  font-size: 1.1em;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+/* Grades list styles */
+.grades-list {
+  margin-bottom: 30px;
+}
+
+.grades-list h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.grade-item {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.grade-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+}
+
+.grade-display span {
+  flex: 1;
+  font-weight: 500;
+}
+
+.grade-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn, .delete-btn, .save-btn, .cancel-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background: #ffc107;
+  color: #212529;
+}
+
+.edit-btn:hover {
+  background: #e0a800;
+}
+
+.delete-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #c82333;
+}
+
+.save-btn {
+  background: #28a745;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #218838;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
+}
+
+/* Edit form styles */
+.edit-form {
+  padding: 15px;
+  background: #ffffff;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.edit-form input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.predictor {
+  margin-top: 30px;
+  background: #e8f0ff;
+  padding: 15px;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+.predictor input {
+  margin-right: 10px;
+  padding: 8px;
+  width: 180px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.predictor button {
+  padding: 8px 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
   .predictor button:hover {
     background: #1e7e34;
   }
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  min-width: 300px;
+  max-width: 90%;
+}
+
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #2c3e50;
+}
+
+.modal input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.modal-actions button:first-child {
+  background: #007bff;
+  color: white;
+}
+
+.modal-actions button:first-child:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.modal-actions button:first-child:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.modal-actions .cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.modal-actions .cancel-btn:hover {
+  background: #5a6268;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .sidebar-header {
+    margin-bottom: 15px;
+  }
+  
+  .course-list {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 10px;
+  }
+  
+  .course-item {
+    white-space: nowrap;
+    min-width: 120px;
+  }
+  
+  .main-content {
+    padding: 15px;
+  }
+  
+  .grade-display {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .edit-form {
+    flex-direction: column;
+  }
+  
+  .edit-form input {
+    width: 100%;
+  }
+}
   

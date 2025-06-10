@@ -4,6 +4,28 @@ import Grade from '../models/Grade.js';
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 const router = express.Router();
 
+// get unique courses for sidebar
+router.get("/courses", ClerkExpressRequireAuth(), async (req, res) => {
+    try {
+        // Check if authentication data is available
+        if (!req.auth || !req.auth.userId) {
+            return res.status(401).json({ 
+                message: "Authentication required",
+                error: "User authentication data is missing" 
+            });
+        }
+
+        const grades = await Grade.find({userId: req.auth.userId});
+        const uniqueCourses = [...new Set(grades.map(grade => grade.course))];
+        
+        return res.status(200).json(uniqueCourses);
+    } catch (error) {
+        res.status(500).json({ 
+            message: "Error fetching courses",
+            error: error.message    
+        });
+    }
+});
 
 // get grade, filtered by course
 router.get("/", ClerkExpressRequireAuth(), async (req, res) => {
