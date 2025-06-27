@@ -1,5 +1,5 @@
 import React from "react";
-// import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./Landing.css";
 
 const Landing = () => {
@@ -25,12 +25,12 @@ const Landing = () => {
               Monitor your progress, set goals, and achieve academic success.
             </p>
             <div className="cta-buttons">
-              <a href="/sign-in" className="btn btn-primary">
+              <Link to="/sign-in" className="btn btn-primary">
                 Get Started
-              </a>
-              <a href="/sign-in" className="btn btn-secondary">
+              </Link>
+              <Link to="/sign-in" className="btn btn-secondary">
                 Login
-              </a>
+              </Link>
             </div>
           </div>
         </div>
