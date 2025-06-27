@@ -27,7 +27,10 @@ async function initializeDatabase() {
     console.log("Database initialized successfully!");
   } catch (error) {
     console.error("Failed to initialize database:", error);
-    process.exit(1);
+    // Don't exit in serverless environment
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   }
 }
 
@@ -39,23 +42,28 @@ initializeDatabase();
 app.use('/api/grades', gradesRouter);
 
 // Health check route
-app.get('/health', (req, res) => {
-    res.status(200).json({ message: 'Server is running', database: 'SQLite' });
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ message: 'Server is running', database: 'Supabase Cloud' });
 });
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-    console.log('Received SIGINT. Graceful shutdown...');
-    await closeConnection();
-    process.exit(0);
-});
+// Graceful shutdown (only for local development)
+if (process.env.NODE_ENV !== 'production') {
+  process.on('SIGINT', async () => {
+      console.log('Received SIGINT. Graceful shutdown...');
+      await closeConnection();
+      process.exit(0);
+  });
 
-process.on('SIGTERM', async () => {
-    console.log('Received SIGTERM. Graceful shutdown...');
-    await closeConnection();
-    process.exit(0);
-});
+  process.on('SIGTERM', async () => {
+      console.log('Received SIGTERM. Graceful shutdown...');
+      await closeConnection();
+      process.exit(0);
+  });
 
-app.listen(3001, () => {
-    console.log("Server running on http://localhost:3001");
-});
+  app.listen(3001, () => {
+      console.log("Server running on http://localhost:3001");
+  });
+}
+
+// Export for serverless deployment
+export default app;
