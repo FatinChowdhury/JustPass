@@ -3,7 +3,6 @@ import { React, useState } from "react";
 import "./Landing.css";
 
 const Landing = () => {
-  const [link, setLink] = useState("");
   // const navigate = useNavigate();
   
   return (

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Protect, UserButton, useAuth } from "@clerk/clerk-react";
+import { UserButton, useAuth } from "@clerk/clerk-react";
 import "./protectedpage.css"; // Make sure to import your CSS file
 import { Line } from "react-chartjs-2";
 import {
@@ -38,7 +38,7 @@ const ProtectedPage = () => {
 
   const { getToken } = useAuth();
 
-  const fetchGrades = async (courseFilter = selectedCourse) => {
+  const fetchGrades = useCallback(async (courseFilter = selectedCourse) => {
     try {
       const token = await getToken();
       const url = courseFilter ? `/api/grades?course=${encodeURIComponent(courseFilter)}` : '/api/grades';
@@ -52,13 +52,13 @@ const ProtectedPage = () => {
     catch (error) {
       console.error("Error fetching grades:", error);
     }
-  }
+  }, [getToken, selectedCourse]);
 
   //listen to id change in route, then trigger fetch class
 
   useEffect(() => {
     fetchGrades();
-  }, [getToken, selectedCourse]);
+  }, [getToken, selectedCourse, fetchGrades]);
 
   const handleAdd = async () => {
     if (!name || isNaN(grade) || isNaN(weight) || !course) return;
