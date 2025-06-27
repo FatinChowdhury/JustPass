@@ -94,7 +94,7 @@ git push -u origin main
 In Vercel project settings, add these environment variables:
 
 ```
-CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
+REACT_APP_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
 CLERK_SECRET_KEY=sk_test_your_key_here
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your_anon_key_here
