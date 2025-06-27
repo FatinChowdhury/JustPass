@@ -1,5 +1,5 @@
 import express from 'express';
-import Grade from '../models/Grade.js';
+import Grade from '../models/Grade-cloud.js';
 // import { gradesCacheMiddleware } from '../middleware/gradesCache.js'; 
 import { ClerkExpressRequireAuth } from '@clerk/clerk-sdk-node';
 const router = express.Router();

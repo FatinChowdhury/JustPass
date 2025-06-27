@@ -2,8 +2,9 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import cors from "cors";
-import Grade from './models/Grade.js';
-import { createConnection, closeConnection } from './database.js';
+// Using cloud database for production deployment
+import Grade from './models/Grade-cloud.js';
+import { createConnection, closeConnection } from './database-cloud.js';
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 import gradesRouter from './routes/grades.js';
 
