@@ -16,6 +16,11 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
+// API base URL configuration
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '' // Use relative URLs in production 
+  : 'http://localhost:3001'; // Use full URL in development
+
 const ProtectedPage = () => {
   const [grades, setGrades] = useState([]);
   const [course, setCourse] = useState("");
@@ -41,7 +46,7 @@ const ProtectedPage = () => {
   const fetchGrades = useCallback(async (courseFilter = selectedCourse) => {
     try {
       const token = await getToken();
-      const url = courseFilter ? `/api/grades?course=${encodeURIComponent(courseFilter)}` : '/api/grades';
+      const url = courseFilter ? `${API_BASE_URL}/api/grades?course=${encodeURIComponent(courseFilter)}` : `${API_BASE_URL}/api/grades`;
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -72,7 +77,7 @@ const ProtectedPage = () => {
 
     try {
       const token = await getToken();
-      const response = await axios.post('/api/grades', {
+      const response = await axios.post(`${API_BASE_URL}/api/grades`, {
         course,
         evalName: name,
         grade: parseFloat(grade),
@@ -111,7 +116,7 @@ const ProtectedPage = () => {
 
     try {
       const token = await getToken();
-      const response = await axios.put(`/api/grades/${editingId}`, {
+      const response = await axios.put(`${API_BASE_URL}/api/grades/${editingId}`, {
         course: editForm.course,
         evalName: editForm.evalName,
         grade: parseFloat(editForm.grade),
@@ -135,7 +140,7 @@ const ProtectedPage = () => {
 
     try {
       const token = await getToken();
-      await axios.delete(`/api/grades/${id}`, {
+      await axios.delete(`${API_BASE_URL}/api/grades/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
