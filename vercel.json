@@ -31,6 +31,14 @@
       "dest": "/frontend/manifest.json"
     },
     {
+      "src": "/JustPass_logo.png",
+      "dest": "/frontend/JustPass_logo.png"
+    },
+    {
+      "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|css|js))",
+      "dest": "/frontend/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend/index.html"
     }
