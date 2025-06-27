@@ -11,7 +11,7 @@ const Landing = () => {
       <div className="hero-section">
         <div className="hero-content">
           <div className="logo-container">
-            <img src="./JustPass_logo.png" alt="JustPass Logo" className="hero-logo" loading="lazy" />
+            <img src="/JustPass_logo.png" alt="JustPass Logo" className="hero-logo" loading="lazy" />
           </div>
           <div className="hero-text">
             <h1 className="hero-title">
