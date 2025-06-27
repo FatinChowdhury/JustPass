@@ -223,7 +223,10 @@ const ProtectedPage = () => {
       {/* Sidebar */}
       <div className="sidebar">
         <div className="sidebar-header">
-          <h3>Courses</h3>
+          <div className="sidebar-left">
+            <UserButton />
+            <h3>Courses</h3>
+          </div>
           <button 
             className="add-course-btn"
             onClick={() => setShowNewCourseModal(true)}
@@ -254,7 +257,6 @@ const ProtectedPage = () => {
       {/* Main Content */}
       <div className="main-content">
         <div className="grade-tracker">
-          <UserButton />
           <h2>JustPass</h2>
           <div className="input-row">
             {selectedCourse && (

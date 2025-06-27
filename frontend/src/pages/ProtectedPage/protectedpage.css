@@ -21,6 +21,12 @@
   margin-bottom: 20px;
 }
 
+.sidebar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .sidebar h3 {
   margin: 0;
   color: #ecf0f1;
