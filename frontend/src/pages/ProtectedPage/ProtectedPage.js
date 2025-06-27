@@ -23,7 +23,6 @@ const API_BASE_URL = process.env.NODE_ENV === 'production'
 
 const ProtectedPage = () => {
   const [grades, setGrades] = useState([]);
-  const [course, setCourse] = useState("");
   const [name, setName] = useState("");
   const [grade, setGrade] = useState("");
   const [weight, setWeight] = useState("");
@@ -66,7 +65,12 @@ const ProtectedPage = () => {
   }, [getToken, selectedCourse, fetchGrades]);
 
   const handleAdd = async () => {
-    if (!name || isNaN(grade) || isNaN(weight) || !course) return;
+    if (!selectedCourse) {
+      alert("Please select a course from the sidebar first, or create a new course");
+      return;
+    }
+    
+    if (!name || isNaN(grade) || isNaN(weight)) return;
     const newWeight = parseFloat(weight);
     const currentWeight = grades.reduce((acc, g) => acc + g.weight, 0);
 
@@ -78,7 +82,7 @@ const ProtectedPage = () => {
     try {
       const token = await getToken();
       const response = await axios.post(`${API_BASE_URL}/api/grades`, {
-        course,
+        course: selectedCourse,
         evalName: name,
         grade: parseFloat(grade),
         weight: newWeight
@@ -89,7 +93,6 @@ const ProtectedPage = () => {
       });
 
       setGrades([...grades, response.data]);
-      setCourse("");
       setName("");
       setGrade("");
       setWeight("");
@@ -160,7 +163,6 @@ const ProtectedPage = () => {
   const handleNewCourse = () => {
     if (newCourseName.trim()) {
       setSelectedCourse(newCourseName.trim());
-      setCourse(newCourseName.trim()); // Pre-fill the course input
       setShowNewCourseModal(false);
       setNewCourseName("");
       // Clear existing grades for the new course view
@@ -255,11 +257,17 @@ const ProtectedPage = () => {
           <UserButton />
           <h2>JustPass</h2>
           <div className="input-row">
-            <input value={course} onChange={(e) => setCourse(e.target.value)} placeholder="Course" />
+            {selectedCourse && (
+              <div className="selected-course-indicator">
+                Adding to: <strong>{selectedCourse}</strong>
+              </div>
+            )}
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Assessment" />
             <input value={grade} onChange={(e) => setGrade(e.target.value)} placeholder="Grade %" type="number" />
             <input value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="Weight %" type="number" />
-            <button onClick={handleAdd}>Add</button>
+            <button onClick={handleAdd} disabled={!selectedCourse}>
+              Add to {selectedCourse || "Select Course"}
+            </button>
           </div>
 
           <div className="summary">
